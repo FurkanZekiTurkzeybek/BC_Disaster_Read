@@ -31,6 +31,22 @@ async function readAll() {
     console.log("RA Read time: " + totalTime);
     sumAll += totalTime;
     console.log(events);
+
+    for( var x = 0; x < events.length; x++) {
+        const jsonString = JSON.stringify(events[x]);
+
+
+        const obj = JSON.parse(jsonString);
+
+
+        const arr = [obj];
+
+        for(var i = 0; i < arr.length; i++) {
+             console.log(arr[i].returnValues.state);
+        }
+    }
+    
+    
 }
 
 async function readLast() {
@@ -87,7 +103,7 @@ async function test() {
 }
 
 
-readLast();
+readAll();
 
 
 
