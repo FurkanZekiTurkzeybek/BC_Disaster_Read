@@ -33,7 +33,7 @@ async function readAll() {
 
 async function readLast() {
     var startTime = performance.now();
-    const events = await contract.getPastEvents('allEvents', {
+    const events = await contract.getPastEvents('AddressChanged', {
         fromBlock: 0,
         toBlock: 'latest'
     });
