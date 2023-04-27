@@ -44,47 +44,30 @@ async function readLast() {
         fromBlock: 0,
         toBlock: 'latest'
     });
-    console.log(events);
 
-    const jsonString = JSON.stringify(events);
+    //converting the event to an object.
+    const latestEvent = events[events.length - 1];
+    const jsonString = JSON.stringify(latestEvent);
+    const eventObj = JSON.parse(jsonString);
 
-
-    const obj = JSON.parse(jsonString);
-
-
-    const arr = [obj];
-
-
-    console.log(arr[0]);
+    const stateArr = [eventObj];
+    const latestState = stateArr[0];
 
 
+    console.log(latestState.returnValues.state);
+
+    const name = await contract.methods.getName().call();
+
+    const person = await returnPerson();
+    console.log(person);
 }
 
-//profiling of the reads
-async function testAll() {
-    for (let i = 0; i < noOfIterations; i++) {
-        console.log("****************************");
-        await readAll();
-        console.log("****************************");
-    }
+async function returnPerson()  {
+    const name = await contract.methods.getName().call();
+    const surname = await contract.methods.getSurname().call();
+    const address = await contract.methods.getHomeAddress().call();
+    return name + " " + surname + " " + address;
 }
-
-async function testLast() {
-    for (let i = 0; i < noOfIterations; i++) {
-        console.log("****************************");
-        await readLast();
-        console.log("****************************");
-    }
-
-}
-
-async function test() {
-    await testAll();
-    await testLast();
-    console.log(`Read All avg: ${(sumAll / noOfIterations)} Read Last avg: ${(sumLast / noOfIterations)}`);
-    process.exit();
-}
-
 
 readLast();
 
