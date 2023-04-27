@@ -15,24 +15,14 @@ const contract = new web3.eth.Contract(JSON.parse(interface),
     "0xA50A6a8e727F9c195841a9E0FE788BE559b9c422");
 
 
-let noOfIterations = 5;
-let sumAll = 0;
-let sumLast = 0;
-
-
 async function readAll() {
-    var startTime = performance.now();
     const events = await contract.getPastEvents('allEvents', {
         fromBlock: 0,
         toBlock: 'latest'
     });
-    var endTime = performance.now();
-    const totalTime = (endTime - startTime);
-    console.log("RA Read time: " + totalTime);
-    sumAll += totalTime;
     console.log(events);
 
-    for( var x = 0; x < events.length; x++) {
+    for (var x = 0; x < events.length; x++) {
         const jsonString = JSON.stringify(events[x]);
 
 
@@ -41,28 +31,22 @@ async function readAll() {
 
         const arr = [obj];
 
-        for(var i = 0; i < arr.length; i++) {
-             console.log(arr[i].returnValues.state);
+        for (var i = 0; i < arr.length; i++) {
+            console.log(arr[i].returnValues.state);
         }
     }
-    
-    
+
+
 }
 
 async function readLast() {
-    var startTime = performance.now();
     const events = await contract.getPastEvents('allEvents', {
         fromBlock: 0,
         toBlock: 'latest'
     });
-    const latestEvent = events[events.length - 1];
-    var endTime = performance.now();
-    const totalTime = (endTime - startTime);
-    console.log("RL Read time: " + totalTime);
-    sumLast += totalTime;
-    console.log(latestEvent); 
-    
-    const jsonString = JSON.stringify(latestEvent);
+    console.log(events);
+
+    const jsonString = JSON.stringify(events);
 
 
     const obj = JSON.parse(jsonString);
@@ -71,13 +55,12 @@ async function readLast() {
     const arr = [obj];
 
 
-    console.log(arr[0].returnValues.state);
-
+    console.log(arr[0]);
 
 
 }
 
-
+//profiling of the reads
 async function testAll() {
     for (let i = 0; i < noOfIterations; i++) {
         console.log("****************************");
@@ -103,7 +86,7 @@ async function test() {
 }
 
 
-readAll();
+readLast();
 
 
 
