@@ -24,7 +24,7 @@ app.post("/read", (req, res) => {
     let {statusType} = req.body;
     console.log(`Recieved the number ` + statusType);
 
-    readLast().then(returnedPerson => {
+    readLast(statusType).then(returnedPerson => {
         res.send(returnedPerson);
     });
 });
@@ -58,37 +58,20 @@ async function readAll() {
 }
 
 
-// async function readLast() {
-//     const events = await contract.getPastEvents('allEvents', {
-//         fromBlock: 0,
-//         toBlock: 'latest'
-//     });
-//
-//     //converting the event to an object.
-//     const latestEvent = events[events.length - 1];
-//     const jsonString = JSON.stringify(latestEvent);
-//     const eventObj = JSON.parse(jsonString);
-//
-//     const stateArr = [eventObj];
-//     const latestState = stateArr[0];
-//
-//
-//     console.log(latestState.returnValues.state);
-//
-//     const name = await contract.methods.getName().call();
-//
-//     return await returnPerson();
-// }
-//
-// async function returnPerson() {
-//     const name = await contract.methods.getName().call();
-//     const surname = await contract.methods.getSurname().call();
-//     const address = await contract.methods.getHomeAddress().call();
-//
-//     return {"name": name, "surname": surname, "address": address};
-// }
+async function readLast(stateIndicator) {
+    var desiredState = "not assigned right now";
 
-async function readLast() {
+    switch (stateIndicator) {
+        case "1":
+            desiredState = "wreck";
+            break;
+        case "2":
+            desiredState = "help";
+            break;
+        case "3":
+            desiredState = "safe";
+            break;
+    }
     const events = await contract.getPastEvents('allEvents', {
         fromBlock: 0,
         toBlock: 'latest'
@@ -104,23 +87,24 @@ async function readLast() {
 
     console.log(latestState.returnValues.state);
 
-    const name = await contract.methods.getName().call();
+    if (desiredState === latestState.returnValues.state) {
+        const person = await returnPerson();
 
-    const person = await returnPerson();
+        const output = [{
+            latestState: latestState.returnValues.state,
+            name: person.name,
+            surname: person.surname,
+            address: person.address
+        }];
 
-    const output = [{
-        latestState: latestState.returnValues.state,
-        name: person.name,
-        surname: person.surname,
-        address: person.address
-    }];
+        const jsonData = JSON.stringify(output, null, 2);
 
-    const jsonData = JSON.stringify(output, null, 2);
+        // Write the JSON string to a file synchronously
+        fs.writeFileSync('output.json', jsonData, 'utf8');
 
-    // Write the JSON string to a file synchronously
-    fs.writeFileSync('output.json', jsonData, 'utf8');
+        console.log('Output written to JSON file successfully!');
+    }
 
-    console.log('Output written to JSON file successfully!');
 }
 
 async function returnPerson() {
