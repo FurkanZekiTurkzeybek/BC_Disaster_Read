@@ -11,6 +11,7 @@
   "dependencies": {
     "@truffle/hdwallet-provider": "^2.1.9",
     "express.js": "^1.0.0",
+    "firebase-admin": "^11.9.0",
     "ganache-cli": "^6.12.2",
     "mocha": "^10.2.0",
     "solc": "^0.4.17",

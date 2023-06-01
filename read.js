@@ -11,8 +11,8 @@ const provider = new HDWalletProvider(
 
 const web3 = new Web3(provider);
 
-const contract = new web3.eth.Contract(JSON.parse(interface),
-    "0xA50A6a8e727F9c195841a9E0FE788BE559b9c422");
+
+const fetchFB = require("./fetchFB");
 
 const express = require('express');
 const {urlencoded, json} = require("express");
@@ -22,8 +22,12 @@ app.use(urlencoded({extend: true}));
 app.use(json());
 app.post("/read", (req, res) => {
     let {statusType} = req.body;
-    console.log(`Recieved the number ` + statusType);
-
+    // console.log(`Recieved the number ` + statusType);
+    fs.writeFile('output.json', '[]', 'utf8', (err) => {
+        if (err) {
+            console.error(err);
+            return;
+        }});
     readLast(statusType).then(returnedPerson => {
         res.send(returnedPerson);
     });
@@ -59,7 +63,11 @@ async function readAll() {
 
 
 async function readLast(stateIndicator) {
+
+
+    let fetchedHashes = await fetchFB.fetchHashes();
     var desiredState = "not assigned right now";
+
 
     switch (stateIndicator) {
         case "1":
@@ -72,52 +80,66 @@ async function readLast(stateIndicator) {
             desiredState = "safe";
             break;
     }
-    const events = await contract.getPastEvents('allEvents', {
-        fromBlock: 0,
-        toBlock: 'latest'
-    });
+    for (let i = 0; i < fetchedHashes.length; i++) {
+        const contract = new web3.eth.Contract(JSON.parse(interface),
+            fetchedHashes[i].toString());
+        const events = await contract.getPastEvents('allEvents', {
+            fromBlock: 0,
+            toBlock: 'latest'
+        });
 
-    // Converting the event to an object
-    const latestEvent = events[events.length - 1];
-    const jsonString = JSON.stringify(latestEvent);
-    const eventObj = JSON.parse(jsonString);
+        // Converting the event to an object
+        const latestEvent = events[events.length - 1];
+        const jsonString = JSON.stringify(latestEvent);
+        const eventObj = JSON.parse(jsonString);
 
-    const stateArr = [eventObj];
-    const latestState = stateArr[0];
+        const stateArr = [eventObj];
+        const latestState = stateArr[0];
 
-    console.log(latestState.returnValues.state);
+        console.log(latestState.returnValues.state);
 
-    if (desiredState === latestState.returnValues.state) {
-        const person = await returnPerson();
+        if (desiredState === latestState.returnValues.state) {
+            const name = await contract.methods.getName().call();
+            const surname = await contract.methods.getSurname().call();
+            const address = await contract.methods.getHomeAddress().call();
+            const person = {"name": name, "surname": surname, "address": address};
+            const output = {
+                latestState: latestState.returnValues.state,
+                name: person.name,
+                surname: person.surname,
+                address: person.address
+            };
+            // const jsonData = JSON.stringify(output, null, 2);
 
-        const output = [{
-            latestState: latestState.returnValues.state,
-            name: person.name,
-            surname: person.surname,
-            address: person.address
-        }];
+            // Write the JSON string to a file synchronously
+            // fs.writeFileSync('output.json', jsonData, 'utf8');
 
-        const jsonData = JSON.stringify(output, null, 2);
+            fs.readFile("output.json", "utf-8", (err, data) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                try {
+                    const jsonData = JSON.parse(data);
+                    jsonData.push(output);
+                    const updatedJsondata = JSON.stringify(jsonData, null, 2);
 
-        // Write the JSON string to a file synchronously
-        fs.writeFileSync('output.json', jsonData, 'utf8');
+                    fs.writeFile("output.json", updatedJsondata, "utf-8",
+                        (err) => {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            console.log("data added to json.");
+                        });
+                } catch (error) {
+                    console.error('Error parsing JSON data:', error);
 
-        console.log('Output written to JSON file successfully!');
+                }
+            })
+        }
     }
 
+
 }
-
-async function returnPerson() {
-    const name = await contract.methods.getName().call();
-    const surname = await contract.methods.getSurname().call();
-    const address = await contract.methods.getHomeAddress().call();
-
-    return {"name": name, "surname": surname, "address": address};
-}
-
-
-
-
-
-
 
