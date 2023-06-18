@@ -111,8 +111,6 @@ async function readLast(stateIndicator) {
         // }
 
 
-
-
         const jsonString = JSON.stringify(latestEvent);
         const eventObj = JSON.parse(jsonString);
 
