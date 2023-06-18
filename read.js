@@ -27,7 +27,8 @@ app.post("/read", (req, res) => {
         if (err) {
             console.error(err);
             return;
-        }});
+        }
+    });
     readLast(statusType).then(returnedPerson => {
         res.send(returnedPerson);
     });
@@ -90,6 +91,28 @@ async function readLast(stateIndicator) {
 
         // Converting the event to an object
         const latestEvent = events[events.length - 1];
+
+        // var latestEvent;
+        // var eventFound = false;
+        // var index = 1;
+        //
+        // while (eventFound === false && index <= events.length) {
+        //     if (events[events.length - index].returnValues.state !== desiredState) {
+        //         index++;
+        //     } else {
+        //         latestEvent = events[events.length - index];
+        //         eventFound = true;
+        //     }
+        // }
+
+
+        // if (latestEvent.returnValues.state !== desiredState) {
+        //     for(let i= 0; )
+        // }
+
+
+
+
         const jsonString = JSON.stringify(latestEvent);
         const eventObj = JSON.parse(jsonString);
 
